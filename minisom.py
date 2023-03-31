@@ -432,7 +432,7 @@ class MiniSom(object):
                 data[iteration]), decay_rate, num_iteration)
             if((t+1) % len(data) == 0):
                 if(all(self._weights == old_weights)):
-                    print(f'Algorithm converged on epoch ({t / len(data)})')
+                    print(f'\nAlgorithm converged on epoch ({t / len(data)})')
                     break
                 old_weights = self._weights.copy()
         if verbose:
