@@ -2,7 +2,7 @@ from numpy import (array, unravel_index, nditer, linalg, random, subtract, max,
                    power, exp, zeros, ones, arange, outer, meshgrid, dot,
                    logical_and, mean, cov, argsort, linspace, transpose,
                    einsum, prod, nan, sqrt, hstack, diff, argmin, multiply,
-                   nanmean, nansum, tile, array_equal, all)
+                   nanmean, nansum, tile, array_equal, allclose)
 from numpy.linalg import norm
 from collections import defaultdict, Counter
 from warnings import warn
@@ -431,7 +431,7 @@ class MiniSom(object):
             self.update(data[iteration], self.winner(
                 data[iteration]), decay_rate, num_iteration)
             if((t+1) % len(data) == 0):
-                if(all(self._weights == old_weights)):
+                if(allclose(self._weights == old_weights)):
                     print(f'\nAlgorithm converged on epoch ({t / len(data)})')
                     break
                 old_weights = self._weights.copy()
