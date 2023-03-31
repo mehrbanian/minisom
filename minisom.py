@@ -2,7 +2,7 @@ from numpy import (array, unravel_index, nditer, linalg, random, subtract, max,
                    power, exp, zeros, ones, arange, outer, meshgrid, dot,
                    logical_and, mean, cov, argsort, linspace, transpose,
                    einsum, prod, nan, sqrt, hstack, diff, argmin, multiply,
-                   nanmean, nansum, tile, array_equal)
+                   nanmean, nansum, tile, array_equal, allclose)
 from numpy.linalg import norm
 from collections import defaultdict, Counter
 from warnings import warn
@@ -382,7 +382,7 @@ class MiniSom(object):
         for i, c1 in enumerate(linspace(-1, 1, len(self._neigx))):
             for j, c2 in enumerate(linspace(-1, 1, len(self._neigy))):
                 self._weights[i, j] = c1*pc[:, pc_order[0]] + \
-                                      c2*pc[:, pc_order[1]]
+                    c2*pc[:, pc_order[1]]
 
     def train(self, data, num_iteration,
               random_order=False, verbose=False, use_epochs=False):
@@ -427,8 +427,12 @@ class MiniSom(object):
                 return int(iteration_index)
         for t, iteration in enumerate(iterations):
             decay_rate = get_decay_rate(t, len(data))
+            old_weights = self._weights
             self.update(data[iteration], self.winner(data[iteration]),
                         decay_rate, num_iteration)
+            if(allclose(self._weights, old_weights)):
+                print('Algorithm converged.')
+                break
         if verbose:
             print('\n quantization error:', self.quantization_error(data))
 
