@@ -428,9 +428,9 @@ class MiniSom(object):
         for t, iteration in enumerate(iterations):
             decay_rate = get_decay_rate(t, len(data))
             old_weights = self._weights
-            self.update(data[iteration], self.winner(data[iteration]),
-                        decay_rate, num_iteration)
-            if(allclose(self._weights, old_weights)):
+            self.update(data[iteration], self.winner(
+                data[iteration]), decay_rate, num_iteration)
+            if((t % len(data) == 0) and allclose(self._weights, old_weights)):
                 print('Algorithm converged.')
                 break
         if verbose:
