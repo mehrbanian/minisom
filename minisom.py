@@ -425,14 +425,16 @@ class MiniSom(object):
         else:
             def get_decay_rate(iteration_index, data_len):
                 return int(iteration_index)
+        old_weights = self._weights
         for t, iteration in enumerate(iterations):
             decay_rate = get_decay_rate(t, len(data))
-            old_weights = self._weights
             self.update(data[iteration], self.winner(
                 data[iteration]), decay_rate, num_iteration)
-            if((t % len(data) == 0) and allclose(self._weights, old_weights)):
-                print('Algorithm converged.')
-                break
+            if(t % len(data) == 0):
+                if(allclose(self._weights, old_weights)):
+                    print(f'Algorithm converged on epoch ({t / len(data)})')
+                    break
+                old_weights = self._weights
         if verbose:
             print('\n quantization error:', self.quantization_error(data))
 
