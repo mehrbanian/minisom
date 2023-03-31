@@ -2,7 +2,7 @@ from numpy import (array, unravel_index, nditer, linalg, random, subtract, max,
                    power, exp, zeros, ones, arange, outer, meshgrid, dot,
                    logical_and, mean, cov, argsort, linspace, transpose,
                    einsum, prod, nan, sqrt, hstack, diff, argmin, multiply,
-                   nanmean, nansum, tile, array_equal, allclose)
+                   nanmean, nansum, tile, array_equal, all)
 from numpy.linalg import norm
 from collections import defaultdict, Counter
 from warnings import warn
@@ -425,16 +425,16 @@ class MiniSom(object):
         else:
             def get_decay_rate(iteration_index, data_len):
                 return int(iteration_index)
-        old_weights = self._weights
+        old_weights = self._weights.copy()
         for t, iteration in enumerate(iterations):
             decay_rate = get_decay_rate(t, len(data))
             self.update(data[iteration], self.winner(
                 data[iteration]), decay_rate, num_iteration)
-            if(t % len(data) == 0):
-                if(allclose(self._weights, old_weights)):
+            if((t+1) % len(data) == 0):
+                if(all(self._weights == old_weights)):
                     print(f'Algorithm converged on epoch ({t / len(data)})')
                     break
-                old_weights = self._weights
+                old_weights = self._weights.copy()
         if verbose:
             print('\n quantization error:', self.quantization_error(data))
 
