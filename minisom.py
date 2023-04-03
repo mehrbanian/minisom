@@ -352,6 +352,12 @@ class MiniSom(object):
         # sigma and learning rate decrease with the same rule
         sig = self._decay_function(self._sigma, t, max_iteration)
         # improves the performances
+        print(type(sig))
+        print(type(sig))
+        print(self.neighborhood(win, sig).shape)
+        print(self.neighborhood(win, sig))
+        print(type(eta))
+        print(eta)
         g = self.neighborhood(win, sig)*eta
         # w_new = eta * neighborhood_function * (x-w)
         self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
@@ -374,9 +380,10 @@ class MiniSom(object):
                 Maximum number of iterations (one iteration per sample).
         """
         eta = self._decay_function(self._learning_rate, t, max_iteration)
-        g = winner*eta
+        # g = winner*eta
         # w_new = eta * neighborhood_function * (x-w)
-        self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
+        # self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
+        self._weights[winner] += eta * (x-self._weights[winner])
 
     def quantization(self, data):
         """Assigns a code book (weights vector of the winning neuron)
@@ -468,7 +475,7 @@ class MiniSom(object):
                 data[iteration]), decay_rate, num_iteration)
             if((t+1) % len(data) == 0):
                 if(allclose(self._weights, old_weights)):
-                    print(f'\nAlgorithm converged on epoch ({round(t / len(data)) + 1})')
+                    print(f'\nAlgorithm converged on epoch ({round(t / len(data))})')
                     break
                 old_weights = self._weights.copy()
         if verbose:
