@@ -89,7 +89,7 @@ def asymptotic_decay(learning_rate, t, max_iter):
 
 class MiniSom(object):
     def __init__(self, x, y, input_len, sigma=1.0, learning_rate=0.5,
-                 decay_function=asymptotic_decay,
+                 decay_function=asymptotic_decay, competition_form='ocos',
                  neighborhood_function='gaussian', topology='rectangular',
                  activation_distance='euclidean', random_seed=None):
         """Initializes a Self Organizing Maps.
@@ -117,6 +117,7 @@ class MiniSom(object):
             to the dimensions of the map.
             (at the iteration t we have sigma(t) = sigma / (1 + t/T)
             where T is #num_iteration/2)
+
         learning_rate : initial learning rate
             (at the iteration t we have
             learning_rate(t) = learning_rate / (1 + t/T)
@@ -137,6 +138,14 @@ class MiniSom(object):
 
             Note that if a lambda function is used to define the decay
             MiniSom will not be pickable anymore.
+
+        competition_form : string, optional (default='ocos')
+            ocos: On-center, off-surround
+                Only one neuron will have a non-zero output signal after 
+                completing competition
+            wta: On-center, off-surround
+                Each neurons has a number of cooperative neighbors and 
+                some competitive neighbors to do contrast enhancement
 
         neighborhood_function : string, optional (default='gaussian')
             Function that weights the neighborhood of a position in the map.
@@ -173,6 +182,11 @@ class MiniSom(object):
         self._activation_map = zeros((x, y))
         self._neigx = arange(x)
         self._neigy = arange(y)  # used to evaluate the neighborhood function
+
+        if(competition_form == 'wta'):
+            self.update = self.wta_update
+        else:
+            self.update = self.ocos_update
 
         if topology not in ['hexagonal', 'rectangular']:
             msg = '%s not supported only hexagonal and rectangular available'
@@ -317,7 +331,7 @@ class MiniSom(object):
         return unravel_index(self._activation_map.argmin(),
                              self._activation_map.shape)
 
-    def update(self, x, win, t, max_iteration):
+    def ocos_update(self, x, win, t, max_iteration):
         """Updates the weights of the neurons.
 
         Parameters
@@ -339,6 +353,28 @@ class MiniSom(object):
         sig = self._decay_function(self._sigma, t, max_iteration)
         # improves the performances
         g = self.neighborhood(win, sig)*eta
+        # w_new = eta * neighborhood_function * (x-w)
+        self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
+
+    def wta_update(self, x, winner, t, max_iteration):
+        """Updates the weights of the neurons.
+
+        Parameters
+        ----------
+        x : np.array
+            Current pattern to learn.
+        win : tuple
+            Position of the winning neuron for x (array or tuple).
+        t : int
+            rate of decay for sigma and learning rate
+        max_iteration : int
+            If use_epochs is True:
+                Number of epochs the SOM will be trained for
+            If use_epochs is False:
+                Maximum number of iterations (one iteration per sample).
+        """
+        eta = self._decay_function(self._learning_rate, t, max_iteration)
+        g = winner*eta
         # w_new = eta * neighborhood_function * (x-w)
         self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
 
@@ -432,7 +468,7 @@ class MiniSom(object):
                 data[iteration]), decay_rate, num_iteration)
             if((t+1) % len(data) == 0):
                 if(allclose(self._weights, old_weights)):
-                    print(f'\nAlgorithm converged on epoch ({t / len(data)})')
+                    print(f'\nAlgorithm converged on epoch ({round(t / len(data)) + 1})')
                     break
                 old_weights = self._weights.copy()
         if verbose:
