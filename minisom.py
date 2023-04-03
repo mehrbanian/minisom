@@ -167,7 +167,7 @@ class MiniSom(object):
         random_seed : int, optional (default=None)
             Random seed to use.
         """
-        if sigma >= x or sigma >= y:
+        if (sigma >= x or sigma >= y) and (competition_form != 'wta'):
             warn('Warning: sigma is too high for the dimension of the map.')
 
         self._random_generator = random.RandomState(random_seed)
@@ -475,7 +475,8 @@ class MiniSom(object):
                 data[iteration]), decay_rate, num_iteration)
             if((t+1) % len(data) == 0):
                 if(allclose(self._weights, old_weights)):
-                    print(f'\nAlgorithm converged on epoch ({round(t / len(data))})')
+                    print(
+                        f'\nAlgorithm converged on epoch ({round(t / len(data))})')
                     break
                 old_weights = self._weights.copy()
         if verbose:
