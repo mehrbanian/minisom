@@ -352,12 +352,6 @@ class MiniSom(object):
         # sigma and learning rate decrease with the same rule
         sig = self._decay_function(self._sigma, t, max_iteration)
         # improves the performances
-        print(type(sig))
-        print(type(sig))
-        print(self.neighborhood(win, sig).shape)
-        print(self.neighborhood(win, sig))
-        print(type(eta))
-        print(eta)
         g = self.neighborhood(win, sig)*eta
         # w_new = eta * neighborhood_function * (x-w)
         self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
@@ -380,9 +374,6 @@ class MiniSom(object):
                 Maximum number of iterations (one iteration per sample).
         """
         eta = self._decay_function(self._learning_rate, t, max_iteration)
-        # g = winner*eta
-        # w_new = eta * neighborhood_function * (x-w)
-        # self._weights += einsum('ij, ijk->ijk', g, x-self._weights)
         self._weights[winner] += eta * (x-self._weights[winner])
 
     def quantization(self, data):
